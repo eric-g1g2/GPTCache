@@ -6,7 +6,8 @@ from gptcache import cache
 from gptcache.adapter.api import get, put
 from gptcache.processor.pre import get_prompt
 from gptcache.manager import get_data_manager, CacheBase, VectorBase
-from gptcache.embedding import OpenAI as EmbeddingOpenAI
+# from gptcache.embedding import OpenAI as EmbeddingOpenAI
+from gptcache.embedding import Onnx as EmbeddingOnnx
 
 class GPTCacheHandler(http.server.BaseHTTPRequestHandler):
     # curl -X GET  "http://localhost:8000?prompt=hello"
@@ -49,16 +50,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # embeddings
-    embedding_openai = EmbeddingOpenAI()
+    # embeddings = EmbeddingOpenAI()
+    embeddings = EmbeddingOnnx()
+    
 
-    sql_url = 'postgres://postgres:admin@localhost:5433/lust'
+    sql_url = 'postgresql://postgres:admin@localhost:5433/lust'
     scalar_store = CacheBase(name='postgresql', sql_url=sql_url)
-    vector_base = VectorBase('milvus', host='localhost', port='19530', dimension=embedding_openai.dimension)
+    vector_base = VectorBase('milvus', host='localhost', port='19530', dimension=embeddings.dimension)
     data_manager = get_data_manager(scalar_store, vector_base)
     cache.init(
         pre_embedding_func=get_prompt,
         data_manager=data_manager,
-        embedding_func=embedding_openai.to_embeddings
+        embedding_func=embeddings.to_embeddings
     )
 
     start_server(args.host, args.port)
