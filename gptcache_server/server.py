@@ -8,6 +8,7 @@ from gptcache.processor.pre import get_prompt
 from gptcache.manager import get_data_manager, CacheBase, VectorBase
 # from gptcache.embedding import OpenAI as EmbeddingOpenAI
 from gptcache.embedding import Onnx as EmbeddingOnnx
+from gptcache.utils.log import gptcache_log
 
 class GPTCacheHandler(http.server.BaseHTTPRequestHandler):
     # curl -X GET  "http://localhost:8000?prompt=hello"
@@ -49,10 +50,13 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=8000, help="the port to listen on")
     args = parser.parse_args()
 
+    # set logger
+    gptcache_log.setLevel("INFO")
+
     # embeddings
     # embeddings = EmbeddingOpenAI()
     embeddings = EmbeddingOnnx()
-    
+
 
     sql_url = 'postgresql://postgres:admin@localhost:5433/lust'
     scalar_store = CacheBase(name='postgresql', sql_url=sql_url)
